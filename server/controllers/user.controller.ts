@@ -64,4 +64,4 @@ const token = jwt.sign({user, activationCode}, process.env.ACTIVATION_SECRET as 
     expiresIn: '6m'
 });
 return {token, activationCode};
-}
+};
