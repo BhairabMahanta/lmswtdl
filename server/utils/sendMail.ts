@@ -12,7 +12,6 @@ const sendEmail = async (options: EmailOptions): Promise <void> => {
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false,
         auth: {
             user: process.env.SMTP_EMAIL,
             pass: process.env.SMTP_PASSWORD
@@ -23,7 +22,7 @@ const sendEmail = async (options: EmailOptions): Promise <void> => {
     const templatePath = path.join(__dirname, `../mails/${template}`);
     const html:string = await ejs.renderFile(templatePath, data);
     const mailOptions = {
-        from: `${process.env.SMTP_NAME} <${process.env.SMTP_EMAIL}>`,
+        from: process.env.SMTP_EMAIL,
         to: email,
         subject: subject,
         html

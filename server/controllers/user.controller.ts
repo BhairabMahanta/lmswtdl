@@ -44,7 +44,7 @@ export const registerUser = CatchAsyncError(async (req: Request, res: Response, 
             activationToken: activationToken.token
         });
     } catch (error:any) {
-        return next(new ErrorHandler(error.message, 500));
+        return next(new ErrorHandler(error.message, 400));
     }
 
 
