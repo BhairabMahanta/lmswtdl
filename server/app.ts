@@ -3,6 +3,7 @@ export const app = express();
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import {ErrorMiddleware} from "./middleware/error";
+import userRouter from "./routes/user.route";
 require ("dotenv").config();
 
 // body parser
@@ -16,6 +17,7 @@ app.use(cors({
     origin: process.env.ORIGIN,
     // credentials: true
 }));
+app.use("/api/v1/", userRouter);
 
 // testing api
 app.get("/test", (req:Request, res:Response, next:NextFunction) => {
