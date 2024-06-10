@@ -1,11 +1,12 @@
 import {Request, Response, NextFunction} from 'express';
-import userModel from '../models/user.model';
+import userModel, { IUser } from '../models/user.model';
 import ErrorHandler from '../utils/ErrorHandler';
 import {CatchAsyncError} from '../middleware/catchAsyncErrors';
 import jwt, { Secret } from 'jsonwebtoken';
 import ejs from 'ejs';
 import path from 'path';
 import sendEmail from '../utils/sendMail';
+import { sendToken } from '../utils/jwt';
 require ('dotenv').config();
 //register
 interface IRegistrationBody {
@@ -47,9 +48,6 @@ export const registerUser = CatchAsyncError(async (req: Request, res: Response, 
         return next(new ErrorHandler(error.message, 400));
     }
 
-
-  
-
 } catch (error:any) {
     next(new ErrorHandler(error.message, 400));
 }
@@ -65,3 +63,59 @@ const token = jwt.sign({user, activationCode}, process.env.ACTIVATION_SECRET as 
 });
 return {token, activationCode};
 };
+interface IactivationRequest {
+    activation_token: string;
+    activation_code: string;
+}
+export const activateAccount = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const {activation_token, activation_code} = req.body as IactivationRequest;
+        const newUser: {user: IUser; activationCode: string} = jwt.verify(activation_token, process.env.ACTIVATION_SECRET as Secret) as {user: IUser; activationCode: string};
+       
+        if(newUser.activationCode !== activation_code) {
+            return next(new ErrorHandler('Invalid activation code', 400));
+        }
+        const {name, email, password} = newUser.user;
+        const userExists = await userModel.findOne({email});
+        if (userExists) {
+            return next(new ErrorHandler('Email already exists', 400));
+        } else {
+            const user = await userModel.create({
+                name,
+                email,
+                password
+            });
+        }
+        res.status(201).json({
+            success: true,
+            message: 'Account activated successfully'
+        });
+    } catch (error:any) {
+        next(new ErrorHandler(error.message, 400));
+    }
+});
+
+// user logins
+interface IloginRequest {
+    email: string;
+    password: string;
+}
+export const loginUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const {email, password} = req.body as IloginRequest;
+        if(!email || !password) {
+            return next(new ErrorHandler('Please enter email and password', 400));
+        }
+        const user = await userModel.findOne({email}).select('+password');
+        if(!user) {
+            return next(new ErrorHandler('Invalid email or password', 401));
+        }
+        const isPasswordMatched = await user.comparePassword(password);
+        if(!isPasswordMatched) {
+            return next(new ErrorHandler('Invalid email or password', 401));
+        }
+        sendToken(user, 200, res);
+    } catch (error:any) {
+        next(new ErrorHandler(error.message, 400));
+    }
+});

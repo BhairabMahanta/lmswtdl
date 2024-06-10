@@ -18,6 +18,7 @@ app.use(cors({
     // credentials: true
 }));
 app.use("/api/v1/", userRouter);
+app.use("/api/v1/", userRouter);
 
 // testing api
 app.get("/test", (req:Request, res:Response, next:NextFunction) => {

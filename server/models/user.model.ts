@@ -1,5 +1,7 @@
 import mongoose, {Document, Model, Schema} from 'mongoose';
 import bcrypt from 'bcryptjs';
+import jwt, { Secret } from 'jsonwebtoken';
+require('dotenv').config();
 const emailRegexPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export interface IUser extends Document {
     name: string;
@@ -14,6 +16,8 @@ export interface IUser extends Document {
     courses: Array<{courseId: string}>;
     createdAt: Date;
     comparePassword: (enteredPassword: string) => Promise<boolean>;
+    signAccessToken: () => Promise<string>;
+    signRefreshToken: () => Promise<string>;
 }
 const userSchema: Schema<IUser> = new mongoose.Schema({
     name: {
@@ -67,6 +71,14 @@ userSchema.pre<IUser>('save', async function(next) {
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
+// sign access and refresh token
+userSchema.methods.signAccessToken = async function() {
+    return jwt.sign({id: this._id}, process.env.ACCESS_TOKEN as Secret, {expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN});
+}
+userSchema.methods.signRefreshToken = async function() {
+    return jwt.sign({id: this._id}, process.env.REFRESH_TOKEN as Secret, {expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN});
+}
+
 //compare password!!
 userSchema.methods.comparePassword = async function(enteredPassword: string) {
     return await bcrypt.compare(enteredPassword, this.password);
