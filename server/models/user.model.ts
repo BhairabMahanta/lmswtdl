@@ -73,10 +73,10 @@ userSchema.pre<IUser>('save', async function(next) {
 });
 // sign access and refresh token
 userSchema.methods.signAccessToken = async function() {
-    return jwt.sign({id: this._id}, process.env.ACCESS_TOKEN as Secret, {expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN});
+    return jwt.sign({id: this._id}, process.env.ACCESS_TOKEN as Secret, {expiresIn: process.env.ACCESS_TOKEN_EXPIRE});
 }
 userSchema.methods.signRefreshToken = async function() {
-    return jwt.sign({id: this._id}, process.env.REFRESH_TOKEN as Secret, {expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN});
+    return jwt.sign({id: this._id}, process.env.REFRESH_TOKEN as Secret, {expiresIn: process.env.REFRESH_TOKEN_EXPIRE});
 }
 
 //compare password!!

@@ -59,7 +59,7 @@ interface IactivationToken {
 export const createActivationToken = (user:any): IactivationToken => {
 const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
 const token = jwt.sign({user, activationCode}, process.env.ACTIVATION_SECRET as Secret, { 
-    expiresIn: '6m'
+    expiresIn: '5m'
 });
 return {token, activationCode};
 };
@@ -103,6 +103,7 @@ interface IloginRequest {
 export const loginUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try{
         const {email, password} = req.body as IloginRequest;
+        console.log(email, password);
         if(!email || !password) {
             return next(new ErrorHandler('Please enter email and password', 400));
         }
@@ -118,4 +119,17 @@ export const loginUser = CatchAsyncError(async (req: Request, res: Response, nex
     } catch (error:any) {
         next(new ErrorHandler(error.message, 400));
     }
+});
+
+export const logoutUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try{
+    res.cookie("access_token", "", {maxAge:1})
+    res.cookie("refresh_token", "", {maxAge:1})
+    res.status(200).json({
+        success: true,
+        message: 'Logged out successfully'
+    });
+} catch (error:any) {
+    return next(new ErrorHandler(error.message, 400));
+}
 });

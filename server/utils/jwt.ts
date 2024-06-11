@@ -9,13 +9,12 @@ interface ITokenOptions {
     sameSite: 'lax' | 'strict' | 'none'| undefined;
     secure?: boolean;
 }
-export const sendToken = (user: IUser, statusCode: number, res: Response) => {
+export const sendToken = async (user: IUser, statusCode: number, res: Response) => {
     const accessToken = user.signAccessToken();
+    console.log('accessToken', accessToken);
     const refreshToken = user.signRefreshToken();
-
     // upload the login session to redis
     redis.set(user._id, JSON.stringify(user as any));
-
 
     // parsing env  vars
     const accessTokenExpire = parseInt(process.env.ACCESS_TOKEN_EXPIRE || '300', 10);
@@ -38,13 +37,18 @@ export const sendToken = (user: IUser, statusCode: number, res: Response) => {
         accessTokenOptions.secure = true;
         refreshTokenOptions.secure = true;
     }
-
-    // set the cookies
+        // set the cookies
+        setTimeout(() => {
+           
+       
     res.cookie('accessToken', accessToken, accessTokenOptions);
     res.cookie('refreshToken', refreshToken, refreshTokenOptions);
-    res.status(statusCode).json({
-        success: true,
-        user,
-        accessToken
-    });
+    console.log('cookies set', res.cookie);
+        res.status(statusCode).json({
+            success: true,
+            user,
+            accessToken
+        });
+    }, 1900);
+    
 }
