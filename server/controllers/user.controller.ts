@@ -13,7 +13,7 @@ interface IRegistrationBody {
     name:   string;
     email:  string;
     password: string;
-    avatar?:string;
+    avatar?:string; 
 }
 export const registerUser = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try{
@@ -35,7 +35,7 @@ export const registerUser = CatchAsyncError(async (req: Request, res: Response, 
     try{
         await sendEmail({
             email: user.email,
-            subject: 'Account Activation',
+            subject: 'Account Activation'   ,
             template: 'activation-mail.ejs',
             data,
         });
@@ -56,21 +56,22 @@ interface IactivationToken {
     token: string;
     activationCode: string;
 }
-export const createActivationToken = (user:any): IactivationToken => {
+export const createActivationToken = (user:IUser): IactivationToken => {
 const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
 const token = jwt.sign({user, activationCode}, process.env.ACTIVATION_SECRET as Secret, { 
-    expiresIn: '5m'
+    expiresIn: '1h'
 }); // streak pls
+console.log("hahabro")
 return {token, activationCode};
 };
-interface IactivationRequest {
+interface IActivationRequest {
     activation_token: string;
     activation_code: string;
 }
-export const activateAccount = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+export const activateAccount = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => { 
     try{
-        const {activation_token, activation_code} = req.body as IactivationRequest;
-        const newUser: {user: IUser; activationCode: string} = jwt.verify(activation_token, process.env.ACTIVATION_SECRET as Secret) as {user: IUser; activationCode: string};
+        const {activation_token, activation_code} = req.body as IActivationRequest;
+        const newUser: {user: IUser; activationCode: string} = jwt.verify(activation_token, process.env.ACTIVATION_SECRET as string) as {user: IUser; activationCode: string};
        
         if(newUser.activationCode !== activation_code) {
             return next(new ErrorHandler('Invalid activation code', 400));
