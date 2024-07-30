@@ -9,10 +9,11 @@ interface ITokenOptions {
     sameSite: 'lax' | 'strict' | 'none'| undefined;
     secure?: boolean;
 }
-export const sendToken = async (user: IUser, statusCode: number, res: Response) => {
+export const sendToken =  (user: IUser, statusCode: number, res: Response) => {
     const accessToken = user.signAccessToken();
     console.log('accessToken', accessToken);
     const refreshToken = user.signRefreshToken();
+    console.log('refreshToken', refreshToken);
     // upload the login session to redis
     redis.set(user._id, JSON.stringify(user as any));
 
@@ -44,6 +45,11 @@ export const sendToken = async (user: IUser, statusCode: number, res: Response) 
     res.cookie('accessToken', accessToken, accessTokenOptions);
     res.cookie('refreshToken', refreshToken, refreshTokenOptions);
     console.log('cookies set', res.cookie);
+    console.log("accessToken", accessToken);
+    console.log("refreshToken", refreshToken);
+    console.log("user", user);
+    console.log("accessTokenOptions:", accessTokenOptions)
+    console.log("refreshTokenShit:", refreshTokenOptions)
         res.status(statusCode).json({
             success: true,
             user,

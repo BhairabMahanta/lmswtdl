@@ -18,7 +18,6 @@ app.use(cors({
     // credentials: true
 }));
 app.use("/api/v1/", userRouter);
-app.use("/api/v1/", userRouter);
 
 // testing api
 app.get("/test", (req:Request, res:Response, next:NextFunction) => {
@@ -36,5 +35,6 @@ app.all("*", (req:Request, res:Response, next:NextFunction) => {
         success: false,
         message: "You dont touch it lil bro, its a private property."
     });
+    next(error);
 }   );
 app.use(ErrorMiddleware);
