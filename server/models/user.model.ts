@@ -76,7 +76,7 @@ userSchema.methods.signAccessToken = function() {
     return jwt.sign({id: this._id}, process.env.ACCESS_TOKEN || '' as Secret, {expiresIn: "5m"});
 }
 userSchema.methods.signRefreshToken = function() {
-    return jwt.sign({id: this._id}, process.env.REFRESH_TOKEN || '' as Secret, {expiresIn: "5m"});
+    return jwt.sign({id: this._id}, process.env.REFRESH_TOKEN || '' as Secret, {expiresIn: "7d"});
 }
 
 //compare password!!

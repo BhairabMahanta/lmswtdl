@@ -2,11 +2,12 @@ import {Request, Response, NextFunction} from 'express';
 import userModel, { IUser } from '../models/user.model';
 import ErrorHandler from '../utils/ErrorHandler';
 import {CatchAsyncError} from '../middleware/catchAsyncErrors';
-import jwt, { Secret } from 'jsonwebtoken';
+import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
 import ejs from 'ejs';
 import path from 'path';
 import sendEmail from '../utils/sendMail';
-import { sendToken } from '../utils/jwt';
+import { accessTokenOptions, refreshTokenOptions, sendToken } from '../utils/jwt';
+import { redis } from '../utils/redis';
 require ('dotenv').config();
 //register
 interface IRegistrationBody {
@@ -126,6 +127,14 @@ export const logoutUser = CatchAsyncError(async (req: Request, res: Response, ne
     try{
     res.cookie("access_token", "", {maxAge:1})
     res.cookie("refresh_token", "", {maxAge:1})
+    const userId:any = req.user?.id || ""; 
+   await redis.del(userId, (err: any, value:any) => {
+        if(err) {
+            console.log("is this an error:",err);
+        }
+        console.log("what value really:",value);
+    });
+    console.log("anotherRedis",await redis.get(userId));
     res.status(200).json({
         success: true,
         message: 'Logged out successfully'
@@ -134,3 +143,36 @@ export const logoutUser = CatchAsyncError(async (req: Request, res: Response, ne
     return next(new ErrorHandler(error.message, 400));
 }
 });
+
+
+export const updateAccessToken = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const refresh_token = req.cookies.refresh_token;
+        if(!refresh_token) {
+            return next(new ErrorHandler('Please login to access this resource', 401));
+        }
+        const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN as string) as JwtPayload;
+        const message = "could not get refresh token"
+        if(!decoded) {
+            return next(new ErrorHandler(message, 400));
+        }
+        const session = await redis.get(decoded.id as string);
+        const user = JSON.parse(decoded.id);
+        const accessToken = jwt.sign({id: user.id}, process.env.ACCESS_TOKEN as Secret, {expiresIn: "5m"});
+        const refreshToken = jwt.sign({id: user.id}, process.env.REFRESH_TOKEN as Secret, {expiresIn: "7d"});
+        if(!user) {
+            return next(new ErrorHandler('User not found', 404));
+        }
+        res.cookie('access_token', accessToken,accessTokenOptions); 
+        res.cookie('refresh_token', refreshToken, refreshTokenOptions);
+        res.status(200).json({
+            success: true,
+            accessToken,
+            refreshToken
+        });
+        sendToken(user, 200, res);
+    } catch (error:any) {
+        return next(new ErrorHandler(error.message, 400));
+    }
+}
+);
