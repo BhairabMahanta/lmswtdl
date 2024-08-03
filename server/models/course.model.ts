@@ -79,7 +79,6 @@ const courseDataSchema = new Schema<ICourseData>({
   title: String,
   description: String,
   videoUrl: String,
-  videoThumbnail: Object,
   videoSection: String,
   videoLength: String,
   videoPlayer: String,
@@ -100,8 +99,8 @@ const courseSchema = new Schema<ICourse>({
   },
   originalPrice: { type: Number },
   thumbNail: {
-    public_id: { type: String, required: true },
-    url: { type: String, required: true },
+    public_id: { type: String },
+    url: { type: String },
   },
   tags: { type: String, required: true },
   level: { type: String, required: true },
@@ -109,7 +108,7 @@ const courseSchema = new Schema<ICourse>({
   benefits: [{ title: String, description: String }],
   preRequisites: [{ title: String }],
   reviews: [reviewSchema],
-  courseData: courseDataSchema,
+  courseData: [courseDataSchema],
   rating: {
     type: Number,
     default: 0,
@@ -120,5 +119,5 @@ const courseSchema = new Schema<ICourse>({
   },
 });
 
-const CourseModel = (Model<ICourse> = mongoose.model("Course", courseSchema));
+const CourseModel: Model<ICourse> = mongoose.model("Course", courseSchema);
 export default CourseModel;
