@@ -1,8 +1,8 @@
 import mongoose, { Schema, Model, Document } from "mongoose";
 interface IComment extends Document {
   user: string;
-  comment: string;
-  commentReplies: IComment[];
+  question: string;
+  questionReplies: IComment[];
   created: Date;
   updated: Date;
 }
@@ -64,8 +64,8 @@ const linkSchema = new Schema<ILink>({
 });
 const commentSchema = new Schema<IComment>({
   user: String,
-  comment: String,
-  commentReplies: [Object],
+  question: String,
+  questionReplies: [Object],
   created: {
     type: Date,
     default: Date.now,
