@@ -329,11 +329,32 @@ interface IAddReviewData {
   courseId: string;
   reviewId: string;
 }
+
 export const addReplyToReview = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { comment, courseId, reviewId } = req.body as IAddReviewData;
       const course = await CourseModel.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler("Course Not Found", 404));
+      }
+      const review = course?.reviews?.find(
+        (rev: any) => rev._id.toString() === reviewId
+      );
+      if (!review) {
+        return next(new ErrorHandler("Review Not Found", 404));
+      }
+      const replyData: any = {
+        user: req.user,
+        comment: comment,
+      };
+      course?.reviews.push(replyData);
+      await course?.save();
+
+      res.status(200).json({
+        success: true,
+        course,
+      });
     } catch (error: any) {}
   }
 );
