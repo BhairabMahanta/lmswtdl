@@ -338,17 +338,28 @@ export const addReplyToReview = CatchAsyncError(
       if (!course) {
         return next(new ErrorHandler("Course Not Found", 404));
       }
-      const review = course?.reviews?.find(
+      const reviewIndex = course.reviews.findIndex(
         (rev: any) => rev._id.toString() === reviewId
       );
-      if (!review) {
+      console.log("Review Index:", reviewIndex);
+
+      if (reviewIndex === undefined) {
         return next(new ErrorHandler("Review Not Found", 404));
       }
       const replyData: any = {
         user: req.user,
         comment: comment,
       };
-      course?.reviews.push(replyData);
+
+      const review = course.reviews[reviewIndex];
+      console.log("Review Before Push:", review);
+      if (!review.commentReplies) {
+        console.log("huh");
+        review.commentReplies = [];
+      }
+
+      review.commentReplies.push(replyData);
+      console.log("Review After Push:", review);
       await course?.save();
 
       res.status(200).json({
