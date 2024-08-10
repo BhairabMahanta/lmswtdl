@@ -9,35 +9,29 @@ import ejs from "ejs";
 import fs from "fs";
 import sendEmail from "../utils/sendMail";
 import NotificationModel from "../models/notification.model";
-import { nayaOrder } from "../services/order.services";
+import { getAllOrderService, nayaOrder } from "../services/order.services";
 
 export const createOrder = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { courseId, paymentInfo } = req.body as IOrder;
 
-      console.log("Received Request Body:", req.body);
       const userId = req.user?._id;
       const user = await userModel.findById(userId);
-      console.log("Fetched User:", user);
 
       const userCourseExist = user?.courses.some(
         (course: any) => course._id.toString() === courseId
       );
-      console.log("Does User Already Own Course?:", userCourseExist);
 
       if (userCourseExist) {
-        console.log("User already enrolled in the course:", courseId);
         return next(
           new ErrorHandler("You have already enrolled in this course", 400)
         );
       }
 
       const course = await CourseModel.findById(courseId);
-      console.log("Fetched Course:", course);
 
       if (!course) {
-        console.log("Course not found:", courseId);
         return next(new ErrorHandler("Course not found", 404));
       }
 
@@ -61,13 +55,11 @@ export const createOrder = CatchAsyncError(
           }),
         },
       };
-      console.log("Mail Data Prepared:", mailData);
 
       await ejs.renderFile(
-        path.join(__dirname, "../mails/order-confirmation.ejs"),
+        path.join(__dirname, "../mails/orderConfirmationbs.ejs"),
         { order: mailData }
       );
-      console.log("EJS Template Rendered Successfully");
 
       try {
         if (user) {
@@ -75,37 +67,47 @@ export const createOrder = CatchAsyncError(
           await sendEmail({
             email: user?.email,
             subject: "Order Confirmation",
-            template: "order-confirmation",
+            template: "orderConfirmationbs.ejs",
             data: mailData,
           });
-          console.log("Email Sent Successfully");
         }
       } catch (error: any) {
-        console.error("Error Sending Email:", error.message);
         return next(new ErrorHandler(error.message, 500));
       }
 
       user?.courses.push(course?._id);
-      console.log("Updated User Courses:", user?.courses);
 
       await user?.save();
-      console.log("User Saved Successfully");
 
       const notification = await NotificationModel.create({
-        user: req.user?.id,
+        userId: req.user?._id,
         title: "New Order",
         message: `You have successfully enrolled in ${course.name}`,
       });
-      console.log("Notification Created:", notification);
 
       await notification.save();
-      console.log("Notification Saved Successfully");
-
+      console.log("hmm");
+      if (course.purchased !== undefined) {
+        console.log("Course Purchased:", course.purchased);
+        course.purchased += 1;
+        console.log("Course Purchased:", course.purchased);
+      }
+      console.log("hmm");
+      await course?.save();
       nayaOrder(data, res, next);
-      console.log("Order Processing Completed Successfully");
     } catch (error: any) {
       console.error("Error Creating Order:", error.message);
       return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getAllOrders = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllOrderService(res);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
     }
   }
 );
