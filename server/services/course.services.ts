@@ -15,3 +15,18 @@ export const createCourse = async (data: any, res: Response) => {
     });
   }
 };
+export const getAllCourseService = async (res: Response) => {
+  try {
+    const courses = await CourseModel.find().sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      courses,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

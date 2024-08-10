@@ -20,10 +20,10 @@ const notificationSchema = new Schema<INotification>(
       required: true,
       default: "unread",
     },
-    userId: {
-      type: String,
-      required: true,
-    },
+    // userId: {
+    //   type: String,
+    //   required: true,
+    // },
   },
   { timestamps: true }
 );

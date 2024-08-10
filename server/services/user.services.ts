@@ -39,3 +39,21 @@ export const getUserById = async (id: string, res: Response) => {
 //     });
 //   }
 // };
+
+// get all users
+
+export const getAllUserService = async (res: Response) => {
+  try {
+    const users = await userModel.find().sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};

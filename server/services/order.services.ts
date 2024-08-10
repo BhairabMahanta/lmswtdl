@@ -16,3 +16,20 @@ export const nayaOrder = CatchAsyncError(
     }
   }
 );
+
+// get all orders
+export const getAllOrderService = async (res: Response) => {
+  try {
+    const orders = await OrderModel.find().sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
