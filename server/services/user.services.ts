@@ -44,6 +44,7 @@ export const getUserById = async (id: string, res: Response) => {
 
 export const getAllUserService = async (res: Response) => {
   try {
+    console.log("haha");
     const users = await userModel.find().sort({ createdAt: -1 });
     res.status(200).json({
       success: true,
@@ -51,6 +52,32 @@ export const getAllUserService = async (res: Response) => {
     });
   } catch (error) {
     console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export const updateUserRoleService = async (
+  res: Response,
+  id: string,
+  role: string
+) => {
+  try {
+    const user = await userModel.findByIdAndUpdate(id, { role }, { new: true });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error: any) {
+    console.error("Error updating user role:", error);
     res.status(500).json({
       success: false,
       message: "Internal Server Error",
