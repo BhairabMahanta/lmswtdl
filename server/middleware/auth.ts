@@ -36,7 +36,9 @@ export const isAuthenticated = CatchAsyncError(
 
       // Check if the user is found
       if (!user) {
-        return next(new ErrorHandler("User not found", 404));
+        return next(
+          new ErrorHandler("Please Login to access this resource", 404)
+        );
       }
 
       // Attach user information to the request object
