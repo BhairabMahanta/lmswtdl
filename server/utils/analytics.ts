@@ -23,6 +23,7 @@ export async function getMonthlyAnalytics<T extends Document>(
       month: "short",
       year: "numeric",
     });
+    //pls streak dont kill i do tomorror exdtra
     console.log("firstDay", firstDay);
     console.log("lastDay", lastDay);
     const count = await model.countDocuments({
