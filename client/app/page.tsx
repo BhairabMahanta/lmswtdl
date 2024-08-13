@@ -1,7 +1,7 @@
 'use client';
 import React, {FC, useState} from "react";
 import Heading from "./utils/heading";
-import header from "./components/header";
+import Header from "./components/header";
 interface PageProps {
   
 }
@@ -12,7 +12,7 @@ const Page: FC<PageProps> = (props) => {
     <div>
       <Heading title="Eplatform" description="Page description duh" keywords="duh, bro, brainrot" 
       />
-      <header 
+      <Header
       open = {open}
       setOpen = {setOpen}
       activeItem = {activeItem}
